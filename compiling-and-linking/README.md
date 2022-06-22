@@ -6,6 +6,5 @@ Objective is gathering processes (as in things to do) regarding building c progr
 
 ### Standalone executive
 
-- ? from single .c-file (`gcc`)
-- ? from multiple c-files, implicite linking (`gcc`)
-- ? from multiple c-files, explicite linking (`gcc`, `ldd`)
+- from single .c-file (`gcc`)
+- from multiple c-files, explicite linking (`gcc`)

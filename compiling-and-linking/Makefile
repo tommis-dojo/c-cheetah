@@ -1,27 +1,69 @@
-CC=gcc
+INC = include
+OBJ = obj
+SRC = src
+TARGET = target
 
+CC = gcc
+CFLAGS=-I $(INC) -Wall
 
-TARGETS=target/standalone
-
-.PHONY: all
-all: $(TARGETS)
 
 ###########################################################
-# Standalone from single file
+# Common Definitions
 ###########################################################
 
-target/standalone: src/standalone.c
-	mkdir -p target
-	$(CC) $< -o $@
+TARGETS=$(TARGET)/standalone $(TARGET)/sample-with-deps
 
-.PHONY: run
-run: target/standalone
-	$<
 
 ###########################################################
 # Common
 ###########################################################
 
+.PHONY: all
+all: $(TARGETS)
+	@printf "To run all samples:\n\n"
+	@printf "    make run\n"
+
+TARGETSTAMP=$(TARGET)/.stamp
+$(TARGETSTAMP):
+	mkdir -p $(TARGET)
+	touch $@
+
+OBJSTAMP=$(OBJ)/.stamp
+$(OBJSTAMP):
+	mkdir -p $(OBJ)
+	touch $@
+
+.PHONY: run
+run: $(TARGETS)
+	$(TARGET)/standalone
+	$(TARGET)/sample-with-deps
+
 .PHONY: clean
 clean:
-	rm -f $(TARGETS)
+	rm -rf $(OBJ)
+	rm -rf $(TARGET)
+
+
+###########################################################
+# Standalone from single file
+###########################################################
+
+$(TARGET)/standalone: $(SRC)/standalone.c $(TARGETSTAMP)
+	$(CC) $< -o $@
+
+
+###########################################################
+# Standalone from multiple files compile+link separated
+###########################################################
+
+_DEPS = plus.h
+_OBJS = sample-with-deps.o plus.o
+
+DEPS = $(patsubst %,$(INC)/%,$(_DEPS))
+OBJS = $(patsubst %,$(OBJ)/%,$(_OBJS))
+
+$(OBJ)/%.o: $(SRC)/%.c $(DEPS) $(OBJSTAMP)
+	$(CC) $(CFLAGS) -c -o $@ $<
+
+$(TARGET)/sample-with-deps: $(OBJS) $(TARGETSTAMP)
+	$(CC) -lc -o $@ $(OBJS)
