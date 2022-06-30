@@ -1,11 +1,14 @@
-INC = include
-OBJ = obj
-SRC = src
-TARGET = target
-APPS = standalone sample-with-deps
+IDIR = include
+ODIR = obj
+SDIR = src
+TDIR = target
 
 CC = gcc
-CFLAGS=-I $(INC) -Wall
+CFLAGS = -I $(IDIR) -Wall
+
+APPS = standalone sample-with-deps
+
+
 
 
 ###########################################################
@@ -28,7 +31,7 @@ endif
 ###########################################################
 
 LINKER_VARIANTS=LD GCC
-TARGETS=$(TARGET)/GCC/standalone $(TARGET)/GCC/sample-with-deps $(TARGET)/LD/sample-with-deps
+TARGETS=$(TDIR)/GCC/standalone $(TDIR)/GCC/sample-with-deps $(TDIR)/LD/sample-with-deps
 
 
 ###########################################################
@@ -40,7 +43,7 @@ all: $(TARGETS)
 	@printf "To run all samples:\n\n"
 	@printf "    make run\n"
 
-STAMPS = $(OBJ)/.stamp $(TARGET)/GCC/.stamp $(TARGET)/LD/.stamp
+STAMPS = $(ODIR)/.stamp $(TDIR)/GCC/.stamp $(TDIR)/LD/.stamp
 $(STAMPS):
 	$(foreach stamp, $(STAMPS), mkdir -p $(shell dirname $(stamp)); touch $(stamp); )
 
@@ -53,15 +56,15 @@ run: $(TARGETS)
 
 .PHONY: clean
 clean:
-	rm -rf $(OBJ)
-	rm -rf $(TARGET)
+	rm -rf $(ODIR)
+	rm -rf $(TDIR)
 
 
 ###########################################################
 # Standalone from single file in single gcc call
 ###########################################################
 
-$(TARGET)/GCC/standalone: $(SRC)/standalone.c $(STAMPS)
+$(TDIR)/GCC/standalone: $(SDIR)/standalone.c $(STAMPS)
 	$(CC) $< -o $@
 
 
@@ -72,17 +75,17 @@ $(TARGET)/GCC/standalone: $(SRC)/standalone.c $(STAMPS)
 _DEPS = plus.h
 _OBJS = sample-with-deps.o plus.o
 
-DEPS = $(patsubst %,$(INC)/%,$(_DEPS))
-OBJS = $(patsubst %,$(OBJ)/%,$(_OBJS))
+DEPS = $(patsubst %,$(IDIR)/%,$(_DEPS))
+OBJS = $(patsubst %,$(ODIR)/%,$(_OBJS))
 
-$(OBJ)/%.o: $(SRC)/%.c $(DEPS) $(STAMPS)
+$(ODIR)/%.o: $(SDIR)/%.c $(DEPS) $(STAMPS)
 	$(CC) $(CFLAGS) -c -o $@ $<
 
-$(TARGET)/GCC/sample-with-deps: $(OBJS) $(STAMPS)
+$(TDIR)/GCC/sample-with-deps: $(OBJS) $(STAMPS)
 	# Linking with GCC
 	$(CC) -lc -o $@ $(OBJS)
 
-$(TARGET)/LD/sample-with-deps: $(OBJS) $(STAMPS)
+$(TDIR)/LD/sample-with-deps: $(OBJS) $(STAMPS)
 	# Linking traditionally with LD
 	ld $(LDFLAGS) $(OBJS) -o $@ 
 
