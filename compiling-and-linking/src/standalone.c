@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-int main() {
-    printf("standalone: Hi there!\n");
+int main(int argc, char** argv) {
+    printf("%s: Hi there!\n", argv[0]);
     return 0;
 }

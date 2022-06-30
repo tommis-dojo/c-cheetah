@@ -2,16 +2,33 @@ INC = include
 OBJ = obj
 SRC = src
 TARGET = target
+APPS = standalone sample-with-deps
 
 CC = gcc
 CFLAGS=-I $(INC) -Wall
 
 
 ###########################################################
+# Platform-Dependant
+###########################################################
+
+# Following: only for linux and macos
+# May add windows when it touches me
+
+UNAME_S = $(shell uname -s)
+
+ifeq ($(UNAME_S),Darwin)
+	# MacOS with LD seems to be clunky
+	LDFLAGS += -syslibroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk -lSystem
+endif
+
+
+###########################################################
 # Common Definitions
 ###########################################################
 
-TARGETS=$(TARGET)/standalone $(TARGET)/sample-with-deps
+LINKER_VARIANTS=LD GCC
+TARGETS=$(TARGET)/GCC/standalone $(TARGET)/GCC/sample-with-deps $(TARGET)/LD/sample-with-deps
 
 
 ###########################################################
@@ -23,20 +40,16 @@ all: $(TARGETS)
 	@printf "To run all samples:\n\n"
 	@printf "    make run\n"
 
-TARGETSTAMP=$(TARGET)/.stamp
-$(TARGETSTAMP):
-	mkdir -p $(TARGET)
-	touch $@
+STAMPS = $(OBJ)/.stamp $(TARGET)/GCC/.stamp $(TARGET)/LD/.stamp
+$(STAMPS):
+	$(foreach stamp, $(STAMPS), mkdir -p $(shell dirname $(stamp)); touch $(stamp); )
 
-OBJSTAMP=$(OBJ)/.stamp
-$(OBJSTAMP):
-	mkdir -p $(OBJ)
-	touch $@
 
 .PHONY: run
 run: $(TARGETS)
-	$(TARGET)/standalone
-	$(TARGET)/sample-with-deps
+	$(foreach target, $(TARGETS), \
+		$(target); \
+	)
 
 .PHONY: clean
 clean:
@@ -45,10 +58,10 @@ clean:
 
 
 ###########################################################
-# Standalone from single file
+# Standalone from single file in single gcc call
 ###########################################################
 
-$(TARGET)/standalone: $(SRC)/standalone.c $(TARGETSTAMP)
+$(TARGET)/GCC/standalone: $(SRC)/standalone.c $(STAMPS)
 	$(CC) $< -o $@
 
 
@@ -62,8 +75,14 @@ _OBJS = sample-with-deps.o plus.o
 DEPS = $(patsubst %,$(INC)/%,$(_DEPS))
 OBJS = $(patsubst %,$(OBJ)/%,$(_OBJS))
 
-$(OBJ)/%.o: $(SRC)/%.c $(DEPS) $(OBJSTAMP)
+$(OBJ)/%.o: $(SRC)/%.c $(DEPS) $(STAMPS)
 	$(CC) $(CFLAGS) -c -o $@ $<
 
-$(TARGET)/sample-with-deps: $(OBJS) $(TARGETSTAMP)
+$(TARGET)/GCC/sample-with-deps: $(OBJS) $(STAMPS)
+	# Linking with GCC
 	$(CC) -lc -o $@ $(OBJS)
+
+$(TARGET)/LD/sample-with-deps: $(OBJS) $(STAMPS)
+	# Linking traditionally with LD
+	ld $(LDFLAGS) $(OBJS) -o $@ 
+

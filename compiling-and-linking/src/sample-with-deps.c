@@ -2,7 +2,7 @@
 
 #include <stdio.h>
 
-int main() {
-    printf("sample-with-deps: %d + %d = %d\n", 3, 4, plus(3,4));
+int main(int argc, char** argv) {
+    printf("%s: %d + %d = %d\n", argv[0], 3, 4, plus(3,4));
     return 0;
 }
