@@ -2,9 +2,12 @@
 
 Objective is gathering processes (as in things to do) regarding building c programs. That is: compiling executables and object files, implicite and explicite linking, linking external libraries, possibly publishing a code as library, Makefiles. Also fiddling around with gcc vs. clang or other toolchains.
 
-## Steps
-
-### Standalone executive
+## Standalone executive
 
 - from single .c-file (`gcc`)
-- from multiple c-files, explicite linking (`gcc`)
+
+## Example with dependencies
+
+- from multiple c-files
+- explicite linking (`gcc` as well as `ld`)
+
