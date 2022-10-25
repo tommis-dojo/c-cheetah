@@ -45,8 +45,10 @@ ifeq ($(UNAME_S),Darwin)
 	# MacOS with LD seems to be clunky
 	LDFLAGS += -syslibroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk -lSystem
 	SHOW_SHARED_LIBS = otool -L
+	LIBENV = DYLD_LIBRARY_PATH
 else
 	SHOW_SHARED_LIBS = ldd
+	LIBENV = LD_LIBRARY_PATH
 endif
 
 
@@ -80,7 +82,11 @@ $(BIN)/%: usage/%.c $(LIBFILE) $(BIN)/.stamp
 
 .PHONY: run
 run: $(BIN)/example	 # Run example program
+	@printf "\nRun from main directory:\n"
 	$<
+
+	@printf "\nRun from different directory:\n"
+	cd $(BIN) && $(LIBENV)=../lib:$$$(LIBENV) ./example
 
 .PHONY: clean
 clean:  # Remove created files
