@@ -9,5 +9,5 @@ Objective is gathering processes (as in things to do) regarding building c progr
 ## Example with dependencies
 
 - from multiple c-files
-- explicite linking (`gcc` as well as `ld`)
+- explicite linking (`gcc`, possibly `ld` if not too complicated)
 

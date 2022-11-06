@@ -21,8 +21,8 @@ APPS = standalone sample-with-deps
 UNAME_S = $(shell uname -s)
 
 ifeq ($(UNAME_S),Darwin)
-	# MacOS with LD seems to be clunky
-	LDFLAGS += -syslibroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk -lSystem
+	# MacOS with LD seems to be clunky, but at least it works
+	LDFLAGS += -syslibroot /Library/Developer/CommandLineTools/SDKs/MacOSX12.1.sdk -lSystem
 endif
 
 
@@ -31,8 +31,11 @@ endif
 ###########################################################
 
 LINKER_VARIANTS=LD GCC
-TARGETS=$(TDIR)/GCC/standalone $(TDIR)/GCC/sample-with-deps $(TDIR)/LD/sample-with-deps
+TARGETS=$(TDIR)/GCC/standalone $(TDIR)/GCC/sample-with-deps 
 
+ifeq ($(UNAME_S),Darwin)
+TARGETS+=$(TDIR)/LD/sample-with-deps
+endif
 
 ###########################################################
 # Common
@@ -85,7 +88,13 @@ $(TDIR)/GCC/sample-with-deps: $(OBJS) $(STAMPS)
 	# Linking with GCC
 	$(CC) -lc -o $@ $(OBJS)
 
+ifeq ($(UNAME_S),Darwin)
+	# MacOS linker works, but could not easily make it work with Linux.
+	# Calling gcc with "-v" seems to output the linker options that gcc
+	# calls ld with, but it seems to be unnecessarily complicated.
+	# So skip ld with linux, for now.
+	#
 $(TDIR)/LD/sample-with-deps: $(OBJS) $(STAMPS)
 	# Linking traditionally with LD
 	ld $(LDFLAGS) $(OBJS) -o $@ 
-
+endif
